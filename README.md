@@ -6,9 +6,9 @@ This is a Python-based implementation of the oracle-guided inductive synthesis s
 minimal, efficient programs that satisfy some set of input-output examples. Such a system could potentially be used for
 simple program deobfuscation as well as program optimization.
 
-In its current state, `synth` can be used anywhere the satisfiability modulo theories solver package `Z3Py` is available.
+In its current state, `synth` can be used anywhere the satisfiability modulo theories solver package `z3` is available.
 This is a hard dependency and no other SMT backends are currently supported. A web app is currently in development for
-those who cannot install `Z3Py` as a dependency for this project but would still like access to a simple program synthesis
+those who cannot install `z3` as a dependency for this project but would still like access to a simple program synthesis
 application.
 
 ## Getting started
