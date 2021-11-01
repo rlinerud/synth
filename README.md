@@ -43,4 +43,12 @@ synthesizer(oracle, inputs, output, examples)
 ```
 
 Once run, the synthesizer will perform a breadth-first search across the set of possible programs, looking for a
-candidate that satisfies all of the provided input-output examples with as few base components as possible.
+candidate that satisfies all of the provided input-output examples with as few base components as possible. Currently
+only boolean and integer operations are fully supported; support for real number operations is only experimental. The
+user can configure the base components that the system has available to it in ops.py (or add their own if so desired).
+
+## Upcoming
+
+1. Finish docstrings in engine.py and synthesizer.py
+2. Add support for real number operations
+3. Export the ops.py component dictionary to a JSON file for easier configuration by the user
