@@ -56,6 +56,8 @@ class SynthesisEngine:
       synthesis.
     - `_alt_output`: the secondary output variable used during the
       execution of the `_distinct` method.
+    - `timeout`: the number of milliseconds the engine should try
+      solving each Z3 expression it constructs before giving up.
     - `num_lines`: the number of final program lines the engine should
       synthesize.
     - `examples`: the collection of input-output pairs the engine
@@ -71,7 +73,8 @@ class SynthesisEngine:
     """
 
     def __init__(self, input_types: tuple[Instantiator],
-                 output_type: Instantiator, library: Library) -> None:
+                 output_type: Instantiator, library: Library,
+                 timeout: int = 30) -> None:
         """
         Create a new synthesis engine that can generate programs of
         domain `input_types` and range `output_type` using components
@@ -85,6 +88,8 @@ class SynthesisEngine:
           synthesized program's output type.
         - 'library': a dictionary indicating how many of each base
           component should be used during synthesis.
+        - `timeout`: the number of seconds the engine should try
+          solving each Z3 expression it constructs before giving up.
         """
         self._vars = VariableGenerator()
         self.inputs = tuple(self._vars.next_var(t) for t in input_types)
@@ -95,6 +100,7 @@ class SynthesisEngine:
         self.component_vars = self.component_inputs | self.component_outputs
         self.output = self._vars.next_var(output_type)
         self._alt_output = self._vars.next_var(output_type)
+        self.timeout = timeout * 1000
         self.num_lines = len(input_types) + len(self.components)
         self.examples = {}
 
@@ -550,7 +556,8 @@ class SynthesisEngine:
 
         buffer = io.StringIO()
         with redirect_stdout(buffer):
-            z3.solve(self._behaves(locations, output_var))
+            behaves = self._behaves(locations, output_var)
+            z3.solve(behaves, timeout=self.timeout)
 
         # Return an empty dictionary if no viable candidates exist
         for result in ['no solution', 'failed to solve']:
@@ -592,7 +599,7 @@ class SynthesisEngine:
 
         buffer = io.StringIO()
         with redirect_stdout(buffer):
-            z3.solve(self._distinct())
+            z3.solve(self._distinct(), timeout=self.timeout)
 
         # Return an empty tuple if no solution exists
         for result in ['no solution', 'failed to solve']:
