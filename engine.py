@@ -28,7 +28,46 @@ class SynthesisError(Exception):
 class SynthesisEngine:
 
     """
+    The primary driver for program synthesis.
 
+    Performs the synthesis algorithm in Jha et al. (2010) for a given
+    set of input and output variables as well as a base component
+    library. Uses the satisfiability modulo theories solver Z3 to
+    encode the syntactic and semantic constraints that must hold for
+    valid synthesized programs. Each such constraint is accounted for
+    by a different private instance method.
+
+    Instance variables:
+
+    - `_vars`: the engine's Z3 variable generator.
+    - `inputs`: a tuple of the program input variables that are to be
+      used during program synthesis.
+    - `library`: a dictionary that determines how many of each base
+      component the engine should use during program synthesis.
+    - `components`: a list of the base components used during
+      synthesis.
+    - `component_inputs`: the set of component input variables used by
+      the engine.
+    - `component_outputs`: the set of component output variables used
+      by the engine.
+    - `component_vars`: the set of all the component variables used by
+      the engine.
+    - `output`: the primary output variable used during program
+      synthesis.
+    - `_alt_output`: the secondary output variable used during the
+      execution of the `_distinct` method.
+    - `num_lines`: the number of final program lines the engine should
+      synthesize.
+    - `examples`: the collection of input-output pairs the engine
+      should reference while synthesizing.
+
+    Public methods:
+
+    - `__init__`: build a new engine as well as all of the base
+      components that are to be used during program synthesis.
+    - `synthesize`: generate a program that satisfies a set of input-
+      output pairs corresponding to some invisible but accessible
+      reference function.
     """
 
     def __init__(self, input_types: tuple[Instantiator],
@@ -552,7 +591,6 @@ class SynthesisEngine:
             print('  Finding a new input-output pair...')
 
         buffer = io.StringIO()
-        z3.solve(self._distinct())
         with redirect_stdout(buffer):
             z3.solve(self._distinct())
 
@@ -567,15 +605,11 @@ class SynthesisEngine:
         regex = r'var(\d+) = (True|False|-?\d+\.?\d*|-?\d*\.?\d+)'
         pattern = re.compile(regex)
         matches = pattern.findall(buffer.getvalue())
-        for x, y in matches:
-            print(x, y)
         values = {int(index): eval(value) for index, value in matches}
-        print(values)
         new_input = []
         for i in range(len(self.inputs)):
             new_input.append(values[i])
 
-        print(new_input)
         return tuple(new_input)
 
     def synthesize(self, oracle: Oracle, examples: Examples,
@@ -593,6 +627,9 @@ class SynthesisEngine:
         - `oracle`: the reference function to be synthesized.
         - `examples`: a dictionary mapping various program inputs to
           their corresponding outputs.
+        - `verbose`: a boolean indicating whether or not informative
+          print statements should be run during the execution of this
+          function.
         """
         self.examples = examples
         locations = self._locations('orig', self.output)
@@ -605,7 +642,6 @@ class SynthesisEngine:
                 raise SynthesisError('Base components insufficient')
 
             new_input = self._new_input(verbose)
-            print(new_input)
             if not new_input:
                 code = self._code(candidates)
                 if verbose:
@@ -620,9 +656,13 @@ class SynthesisEngine:
 
     def _code(self, locations: dict[Variable, int]) -> str:
         """
-        Generate the code for the final synthesized program.
-        
-        
+        Generate the code that represents the final synthesized
+        program.
+
+        Parameters:
+
+        - `locations`: a dictionary mapping individual input and output
+          variables to their individual line locations.
         """
         prologue = self._prologue()
         epilogue = f'    return T{locations[self.output]}'
@@ -651,7 +691,8 @@ class SynthesisEngine:
 
     def _prologue(self) -> str:
         """
-        Generate the beginning of the code for the synthesized program.
+        Generate the beginning of the code that represents the final
+        synthesized program.
         """
         prologue = 'def program('
         for program_input in self.inputs[:-1]:
