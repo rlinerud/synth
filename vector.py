@@ -7,11 +7,35 @@ from __future__ import annotations
 
 
 import z3
-from synth.types import Boolean, Integral
+from synth.types import Integral
 from typing import Union
 
 
 class Vector:
+
+    """
+    A finite sequence of integral values or variables.
+
+    Instance variables:
+
+    - `_elements`: the entries of the `Vector` as a tuple.
+
+    Public methods:
+
+    - `__init__`: build a new `Vector` object.
+    - `__len__`: return the length of the `Vector`.
+    - `__getitem__`: return the entry that is present in the `Vector`
+      at the specified index.
+    - `__add__`: add this `Vector` to another one.
+    - `__eq__`: check if two `Vector` objects are equal.
+    - `__neq__`: check if two `Vector` objects are unequal.
+    - `__repr__`: return the string representation of the `Vector`.
+    - `dot`: take the dot product of this `Vector` and another.
+    - `times`: take the scalar product of this `Vector` and an integral
+      value or variable.
+    - `basis`: return the basis vector of the given dimensionality and
+      direction.
+    """
 
     def __init__(self, *elements: Integral) -> None:
         """
@@ -62,36 +86,6 @@ class Vector:
         else:
             raise ValueError('Vector operands must have equal length')
 
-    def dot(self, other: Vector) -> Integral:
-        """
-        Return the dot product of this `Vector` with another `Vector`
-        of equal length.
-
-        Parameters:
-
-        - `other`: the other `Vector` to calculate the dot product
-          with.
-        """
-        if len(self) == len(other):
-            pairs = zip(self._elements, other._elements)
-            return sum([x * y for x, y in pairs])
-
-        else:
-            raise ValueError('Vector operands must have equal length')
-
-    def times(self, other: Integral) -> Vector:
-        """
-        Return the scalar product of this `Vector` with an integer Z3
-        variable or primitive `int` value.
-
-        Parameters:
-
-        - `other`: the Z3 variable or `int` value to calculate the
-          scalar product with.
-        """
-        elements = tuple(other * x for x in self._elements)
-        return Vector(*elements)
-
     def __eq__(self, other: Vector) -> z3.BoolRef:
         """
         Return the `z3.BoolRef` that represents equality between this
@@ -126,6 +120,36 @@ class Vector:
     def __repr__(self) -> str:
         """Return the string representation of this `Vector`."""
         return str(self._elements)
+
+    def dot(self, other: Vector) -> Integral:
+        """
+        Return the dot product of this `Vector` with another `Vector`
+        of equal length.
+
+        Parameters:
+
+        - `other`: the other `Vector` to calculate the dot product
+          with.
+        """
+        if len(self) == len(other):
+            pairs = zip(self._elements, other._elements)
+            return sum([x * y for x, y in pairs])
+
+        else:
+            raise ValueError('Vector operands must have equal length')
+
+    def times(self, other: Integral) -> Vector:
+        """
+        Return the scalar product of this `Vector` with an integer Z3
+        variable or primitive `int` value.
+
+        Parameters:
+
+        - `other`: the Z3 variable or `int` value to calculate the
+          scalar product with.
+        """
+        elements = tuple(other * x for x in self._elements)
+        return Vector(*elements)
 
     @staticmethod
     def basis(dim: int, index: int) -> Vector:
