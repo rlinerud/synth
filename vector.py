@@ -115,7 +115,8 @@ class Vector:
 
         - `other`: the other `Vector` to compare against.
         """
-        return z3.Not(self == other)
+        predicate = z3.Not(self == other)
+        return z3.simplify(predicate)
 
     def __repr__(self) -> str:
         """Return the string representation of this `Vector`."""
@@ -163,7 +164,7 @@ class Vector:
         - `index`: the index of the nonzero entry in the resulting
           `Vector`.
         """
-        if pos >= dim:
+        if index >= dim:
             raise ValueError('Index must be smaller than dimension')
 
         elements = [0 for _ in range(dim)]
