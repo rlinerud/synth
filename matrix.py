@@ -28,6 +28,8 @@ class Matrix:
     Public methods:
 
     - `__init__`: build a new `Matrix` object.
+    - `__getitem__`: return the row `Vector` that is present in the
+      `Matrix` at the specified index.
     - `__repr__`: return the string representation of the `Matrix`.
     - `__add__`: add this `Matrix` to another one.
     - `__eq__`: check if two `Matrix` objects are equal.
@@ -38,6 +40,7 @@ class Matrix:
     - `identity`: build the identity `Matrix` of the specified
       dimensionality.
     - `singleton`: build a `Matrix` containing just a single entry.
+    - `variables`: build a `Matrix` full of Z3 variables.
     """
 
     def __init__(self, *rows: Vector) -> None:
@@ -52,6 +55,18 @@ class Matrix:
         self.dims = len(rows), len(rows[0])
         self.rows = rows
         self.cols = self._cols()
+
+    def __getitem__(self, index: int) -> Vector:
+        """
+        Return the `Vector` that is present in the `Matrix` at the
+        specified `index`.
+
+        Parameters:
+
+        - `index`: the location of the `Vector` that should be
+          returned.
+        """
+        return self.rows[index]
 
     @staticmethod
     def _validate(rows: tuple[Vector]) -> None:
