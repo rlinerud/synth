@@ -7,7 +7,8 @@ from __future__ import annotations
 
 
 import z3
-from synth.types import Integral
+from synth.types import Instantiator, Integral
+from synth.vars import VariableGenerator
 from synth.vector import Vector
 from typing import Union
 
@@ -217,3 +218,31 @@ class Matrix:
           `Matrix`.
         """
         return Matrix(Vector(entry))
+
+    @staticmethod
+    def variables(num_rows: int, num_cols: int, kind: Instantiator,
+                  var_gen: VariableGenerator) -> Matrix:
+        """
+        Return a `Matrix` full of Z3 variables of the given type and
+        dimension.
+
+        Parameters:
+
+        - `num_rows`: the number of rows in the resulting `Matrix`.
+        - `num_cols`: the number of columns in the resulting `Matrix`.
+        - `kind`: the Z3 variable instantiator to use in the
+          construction of the variable `Matrix` entries.
+        - `var_gen`: the `VariableGenerator` to draw new Z3 variables
+          from.
+        """
+        rows = []
+        for _ in range(num_rows):
+            row = []
+            for _ in range(num_cols):
+                var = var_gen.next_var(kind)
+                row.append(var)
+
+            vector = Vector(*tuple(row))
+            rows.append(vector)
+
+        return Matrix(*tuple(rows))
