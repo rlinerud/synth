@@ -21,6 +21,7 @@ class Matrix:
     Instance variables:
 
     - `dims`: the dimensionality of the `Matrix` as a tuple.
+    - `kind`: the type of the entries in the `Matrix`.
     - `rows`: the rows of the `Matrix` as a tuple of `Vector` objects.
     - `cols`: the columns of the `Matrix` as a tuple of `Vector`
       objects.
@@ -53,6 +54,7 @@ class Matrix:
         """
         self._validate(rows)
         self.dims = len(rows), len(rows[0])
+        self.kind = type(rows[0][0])
         self.rows = rows
         self.cols = self._cols()
 
@@ -99,7 +101,7 @@ class Matrix:
         for j in range(num_cols):
             col = []
             for i in range(num_rows):
-                entry = self.rows[i][j]
+                entry = self[i][j]
                 col.append(entry)
 
             vector = Vector(*tuple(col))
@@ -203,6 +205,24 @@ class Matrix:
     def transpose(self) -> Matrix:
         """Return the transpose of this `Matrix`."""
         return Matrix(*self.cols)
+
+    def existentials(self, predicate: z3.BoolRef) -> z3.BoolRef:
+        """
+        Add an existential quantifier to the given `predicate` for each
+        Z3 variable that is present in this `Matrix`.
+
+        Parameters:
+
+        - `predicate`: the Z3 expression to extend.
+        """
+        if self.kind in [bool, int, float]:
+            raise ValueError('Matrix must have variable entries')
+
+        for row in self.rows:
+            for element in row:
+                predicate = z3.Exists(element, predicate)
+
+        return z3.simplify(predicate)
 
     @staticmethod
     def identity(dim: int) -> Matrix:
