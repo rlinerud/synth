@@ -5,11 +5,9 @@
 
 from __future__ import annotations
 
-
 import z3
 from synth.types import Integral
 from typing import Union
-
 
 class Vector:
 
