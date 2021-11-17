@@ -5,18 +5,15 @@
 
 from __future__ import annotations
 
-
 import z3
-from synth.types import Instantiator, Integral
+from synth.types import Entry, Instantiator, Integral
 from synth.vars import VariableGenerator
 from synth.vector import Vector
-from typing import Union
-
 
 class Matrix:
 
     """
-    A matrix of integral values or variables.
+    A matrix of boolean or integral values or variables.
 
     Instance variables:
 
@@ -85,9 +82,14 @@ class Matrix:
         if rows:
             if rows[0]:
                 row_len = len(rows[0])
+                kind = rows[0].kind
                 for row in rows:
                     if len(row) != row_len:
                         message = 'All matrix rows must have equal length'
+                        raise ValueError(message)
+
+                    if row.kind is not kind:
+                        message = 'All matrix entries must have the same type'
                         raise ValueError(message)
 
             else:
@@ -124,6 +126,12 @@ class Matrix:
 
         - `other`: the other `Matrix` to be added to this one.
         """
+        if self.kind not in [z3.ArithRef, int]:
+            raise AttributeError('Matrix entries must be integral')
+
+        if other.kind not in [z3.ArithRef, int]:
+            raise ValueError('Matrix entries must be integral')
+
         if self.dims == other.dims:
             rows = tuple(x + y for x, y in zip(self.rows, other.rows))
             return Matrix(*rows)
@@ -172,6 +180,12 @@ class Matrix:
 
         - `other`: the other `Matrix` to multiply this one with.
         """
+        if self.kind not in [z3.ArithRef, int]:
+            raise AttributeError('Matrix entries must be integral')
+
+        if other.kind not in [z3.ArithRef, int]:
+            raise ValueError('Matrix entries must be integral')
+
         num_rows, num_cols = other.dims[0], self.dims[1]
         if num_rows == num_cols:
             new_rows = []
@@ -198,6 +212,12 @@ class Matrix:
         - `other`: the scalar value or variable to multiply this
           `Matrix` with.
         """
+        if self.kind not in [z3.ArithRef, int]:
+            raise AttributeError('Matrix entries must be integral')
+
+        if type(other) not in [z3.ArithRef, int]:
+            raise TypeError('Scalars must be integral')
+
         rows = []
         for row in self.rows:
             rows.append(row.times(other))
@@ -217,8 +237,8 @@ class Matrix:
 
         - `predicate`: the Z3 expression to extend.
         """
-        if self.kind in [bool, int, float]:
-            raise ValueError('Matrix must have variable entries')
+        if self.kind in [bool, int]:
+            raise AttributeError('Matrix must have variable entries')
 
         for row in self.rows:
             for element in row:
@@ -244,15 +264,14 @@ class Matrix:
         return Matrix(*tuple(rows))
 
     @staticmethod
-    def singleton(entry: Integral) -> Matrix:
+    def singleton(entry: Entry) -> Matrix:
         """
         Return the singleton `Matrix` that contains just the given
         `entry`.
 
         Parameters:
 
-        - `entry`: the integral value or variable to include in the
-          `Matrix`.
+        - `entry`: the value or variable to include in the `Matrix`.
         """
         return Matrix(Vector(entry))
 
