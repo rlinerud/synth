@@ -38,6 +38,8 @@ class Matrix:
     - `mmul`: multiply this `Matrix` with another one.
     - `smul`: multiply this `Matrix` by a given scalar.
     - `transpose`: return the transpose of this `Matrix`.
+    - `existentials`: extend a Z3 expression with existential
+      quantifiers for the variables that are in this `Matrix`.
     - `identity`: build the identity `Matrix` of the specified
       dimensionality.
     - `singleton`: build a `Matrix` containing just a single entry.
