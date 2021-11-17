@@ -3,7 +3,6 @@
 #
 # types.py
 
-from synth.matrix import Matrix
 from typing import Callable, Union
 from z3 import ArithRef, BoolRef
 
@@ -16,6 +15,8 @@ Integral = Union[ArithRef, int]
 #Real = Union[ArithRef, float]
 #Arithmetic = Union[Integral, Real]
 #Input = Union[Boolean, Arithmetic]
+
+from synth.matrix import Matrix
 
 Library = dict[str, int]
 LineMapping = dict[Matrix, Integral]
