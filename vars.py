@@ -6,7 +6,6 @@
 from synth.types import Instantiator, Variable
 from typing import Generator
 
-
 class VariableGenerator:
 
     """
